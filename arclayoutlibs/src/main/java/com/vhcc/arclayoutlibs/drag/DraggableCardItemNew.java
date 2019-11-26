@@ -20,7 +20,7 @@ import com.vhcc.arclayoutlibs.R;
 /**
  * Created by xmuSistone on 2016/5/23.
  */
-public class DraggableCardItem extends FrameLayout {
+public class DraggableCardItemNew extends FrameLayout {
 
     public static final int STATUS_LEFT_TOP = 0;
     public static final int STATUS_RIGHT_TOP = 1;
@@ -41,30 +41,30 @@ public class DraggableCardItem extends FrameLayout {
     private Spring springX, springY;
     private ObjectAnimator scaleAnimator;
     private boolean hasSetCurrentSpringValue = false;
-    private DraggableCardView parentView;
+    private DraggableCardViewNew parentView;
     private SpringConfig springConfigCommon = SpringConfig.fromOrigamiTensionAndFriction(140, 7);
     private int moveDstX = Integer.MIN_VALUE, moveDstY = Integer.MIN_VALUE;
-    private View.OnClickListener dialogListener;
+    private OnClickListener dialogListener;
 
     private String imagePath;
     private View addView;
 
-    public DraggableCardItem(Context context) {
+    public DraggableCardItemNew(Context context) {
         this(context, null);
     }
 
-    public DraggableCardItem(Context context, AttributeSet attrs) {
+    public DraggableCardItemNew(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public DraggableCardItem(Context context, AttributeSet attrs, int defStyleAttr) {
+    public DraggableCardItemNew(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         inflate(context, R.layout.drag_item, this);
         imageView = (ImageView) findViewById(R.id.drag_item_imageview);
         maskView = findViewById(R.id.drag_item_mask_view);
         addView = findViewById(R.id.add_view);
 
-        dialogListener = new View.OnClickListener() {
+        dialogListener = new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.pick_image) {
@@ -75,7 +75,7 @@ public class DraggableCardItem extends FrameLayout {
                     imagePath = null;
                     imageView.setImageBitmap(null);
                     addView.setVisibility(View.VISIBLE);
-                    parentView.onDeleteImage(DraggableCardItem.this);
+//                    parentView.onDeleteImage(DraggableCardItemNew.this);
                 }
             }
         };
@@ -90,7 +90,7 @@ public class DraggableCardItem extends FrameLayout {
             }
         });
 
-        maskView.setOnClickListener(new View.OnClickListener() {
+        maskView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!isDraggable()) {
@@ -174,10 +174,10 @@ public class DraggableCardItem extends FrameLayout {
         }
 
         this.status = toStatus;
-        Point point = parentView.getOriginViewPos(status);
-        this.moveDstX = point.x;
-        this.moveDstY = point.y;
-        animTo(moveDstX, moveDstY);
+//        Point point = parentView.getOriginViewPos(status);
+//        this.moveDstX = point.x;
+//        this.moveDstY = point.y;
+//        animTo(moveDstX, moveDstY);
     }
 
     public void animTo(int xPos, int yPos) {
@@ -224,7 +224,7 @@ public class DraggableCardItem extends FrameLayout {
         springX.setOvershootClampingEnabled(true);
         springY.setOvershootClampingEnabled(true);
         animTo(moveDstX, moveDstY);
-        scaleSize(DraggableCardItem.SCALE_LEVEL_3);
+        scaleSize(DraggableCardItemNew.SCALE_LEVEL_3);
     }
 
     public void setScreenX(int screenX) {
@@ -261,15 +261,15 @@ public class DraggableCardItem extends FrameLayout {
         return status;
     }
 
-    public void setParentView(DraggableCardView parentView) {
+    public void setParentView(DraggableCardViewNew parentView) {
         this.parentView = parentView;
     }
 
     public void onDragRelease() {
-        if (status == DraggableCardItem.STATUS_LEFT_TOP) {
-            scaleSize(DraggableCardItem.SCALE_LEVEL_1);
+        if (status == DraggableCardItemNew.STATUS_LEFT_TOP) {
+            scaleSize(DraggableCardItemNew.SCALE_LEVEL_1);
         } else {
-            scaleSize(DraggableCardItem.SCALE_LEVEL_2);
+            scaleSize(DraggableCardItemNew.SCALE_LEVEL_2);
         }
 
         springX.setOvershootClampingEnabled(false);
@@ -277,11 +277,11 @@ public class DraggableCardItem extends FrameLayout {
         springX.setSpringConfig(springConfigCommon);
         springY.setSpringConfig(springConfigCommon);
 
-        Point point = parentView.getOriginViewPos(status);
-        setCurrentSpringPos(getLeft(), getTop());
-        this.moveDstX = point.x;
-        this.moveDstY = point.y;
-        animTo(moveDstX, moveDstY);
+//        Point point = parentView.getOriginViewPos(status);
+//        setCurrentSpringPos(getLeft(), getTop());
+//        this.moveDstX = point.x;
+//        this.moveDstY = point.y;
+//        animTo(moveDstX, moveDstY);
     }
 
     public void fillImageView(String imagePath) {
@@ -312,7 +312,8 @@ public class DraggableCardItem extends FrameLayout {
     }
 
     public boolean isDraggable() {
-        return imagePath != null;
+        return true;
+//        return imagePath != null;
     }
 }
 

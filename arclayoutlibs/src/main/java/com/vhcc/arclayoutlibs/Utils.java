@@ -18,18 +18,23 @@ package com.vhcc.arclayoutlibs;
 import android.util.Log;
 import android.view.View;
 
-class Utils {
+public class Utils {
 
     // General Field
-    static final String LOG_PREFIX = "ArcLibs, ";
+    private static final String LOG_PREFIX = "ArcLibs, ";
 
-    static final boolean ENABLE_GLOBAL_LOG = true; //Set to true only when developing
+    public static final boolean ENABLE_GLOBAL_LOG = true; //Set to true only when developing
 
-    private Utils() {
+    // Local Field
+    private final boolean enableLocalLog;
+
+    public Utils(boolean enableLocalLog) {
+        this.enableLocalLog = enableLocalLog;
     }
 
-    static void d(String tag, String format, Object... args) {
-        Log.d(LOG_PREFIX + tag, String.format(format, args));
+    public void d(String tag, String format, Object... args) {
+        if (!ENABLE_GLOBAL_LOG) { return;}
+        if (enableLocalLog) { Log.d(LOG_PREFIX + tag, String.format(format, args));}
     }
 
     static int computeMeasureSize(int measureSpec, int defSize) {

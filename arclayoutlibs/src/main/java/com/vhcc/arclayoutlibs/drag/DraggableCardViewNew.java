@@ -24,7 +24,7 @@ import androidx.customview.widget.ViewDragHelper;
  * 正方形的拖拽面板
  * Created by xmuSistone on 2016/5/23.
  */
-public class DraggableCardView extends ViewGroup {
+public class DraggableCardViewNew extends ViewGroup {
 
     private static final Utils mLog = new Utils(true);
     private final String TAG = getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
@@ -34,12 +34,12 @@ public class DraggableCardView extends ViewGroup {
      */
     private static final int INTERCEPT_TIME_SLOP = 200;
     private final int[] allCards = {
-            DraggableCardItem.STATUS_LEFT_TOP,
-            DraggableCardItem.STATUS_RIGHT_TOP,
-            DraggableCardItem.STATUS_RIGHT_MIDDLE,
-            DraggableCardItem.STATUS_RIGHT_BOTTOM,
-            DraggableCardItem.STATUS_MIDDLE_BOTTOM,
-            DraggableCardItem.STATUS_LEFT_BOTTOM
+            DraggableCardItemNew.STATUS_LEFT_TOP,
+            DraggableCardItemNew.STATUS_RIGHT_TOP,
+            DraggableCardItemNew.STATUS_RIGHT_MIDDLE,
+            DraggableCardItemNew.STATUS_RIGHT_BOTTOM,
+            DraggableCardItemNew.STATUS_MIDDLE_BOTTOM,
+            DraggableCardItemNew.STATUS_LEFT_BOTTOM
     };
 
     /**
@@ -62,7 +62,7 @@ public class DraggableCardView extends ViewGroup {
     /**
      * 正在拖拽的view
      */
-    private DraggableCardItem draggingView;
+    private DraggableCardItemNew draggingView;
 
     /**
      * 每一个小方块的边长
@@ -90,15 +90,15 @@ public class DraggableCardView extends ViewGroup {
     private Handler anchorHandler;
     private boolean firstLayout = true;
 
-    public DraggableCardView(Context context) {
+    public DraggableCardViewNew(Context context) {
         this(context, null);
     }
 
-    public DraggableCardView(Context context, AttributeSet attrs) {
+    public DraggableCardViewNew(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public DraggableCardView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public DraggableCardViewNew(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mDragHelper = ViewDragHelper.create(this, 10f, new DragHelperCallback());
         moveDetector = new GestureDetectorCompat(context, new MoveDetector());
@@ -132,7 +132,7 @@ public class DraggableCardView extends ViewGroup {
 
         for (int index = 0; index < allCards.length; index++) {
             // 渲染结束之后，朝viewGroup中添加子View
-            DraggableCardItem itemView = new DraggableCardItem(getContext());
+            DraggableCardItemNew itemView = new DraggableCardItemNew(getContext());
             itemView.setStatus(allCards[index]);
             itemView.setParentView(this);
             //  原始位置点，由此初始化，一定与子View的status绑定
@@ -154,14 +154,14 @@ public class DraggableCardView extends ViewGroup {
     public void fillItemImage(int imageStatus, String imagePath, boolean isModify) {
         // 1. 如果是修改图片，直接填充就好
         if (isModify) {
-            DraggableCardItem itemView = getItemViewByStatus(imageStatus);
+            DraggableCardItemNew itemView = getItemViewByStatus(imageStatus);
             itemView.fillImageView(imagePath);
             return;
         }
 
         // 2. 新增图片
         for (int i = 0; i < allCards.length; i++) {
-            DraggableCardItem itemView = getItemViewByStatus(i);
+            DraggableCardItemNew itemView = getItemViewByStatus(i);
             if (!itemView.isDraggable()) {
                 itemView.fillImageView(imagePath);
                 break;
@@ -172,12 +172,12 @@ public class DraggableCardView extends ViewGroup {
     /**
      * 删除某一个ImageView时，该imageView变成空的，需要移动到队尾
      */
-    public void onDeleteImage(DraggableCardItem deleteView) {
+    public void onDeleteImage(DraggableCardItemNew deleteView) {
         int status = deleteView.getStatus();
         int lastDraggableViewStatus = -1;
         // 顺次将可拖拽的view往前移
         for (int i = status + 1; i < allCards.length; i++) {
-            DraggableCardItem itemView = getItemViewByStatus(i);
+            DraggableCardItemNew itemView = getItemViewByStatus(i);
             if (itemView.isDraggable()) {
                 // 可拖拽的view往前移
                 lastDraggableViewStatus = i;
@@ -202,7 +202,7 @@ public class DraggableCardView extends ViewGroup {
             // draggingView拖动的时候，如果与其它子view交换位置，其他子view位置改变，也会进入这个回调
             // 所以此处加了一层判断，剔除不关心的回调，以优化性能
             if (changedView == draggingView) {
-                DraggableCardItem changedItemView = (DraggableCardItem) changedView;
+                DraggableCardItemNew changedItemView = (DraggableCardItemNew) changedView;
                 switchPositionIfNeeded(changedItemView);
             }
         }
@@ -210,25 +210,25 @@ public class DraggableCardView extends ViewGroup {
         @Override
         public boolean tryCaptureView(View child, int pointerId) {
             // 按下的时候，缩放到最小的级别
-            draggingView = (DraggableCardItem) child;
+            draggingView = (DraggableCardItemNew) child;
             return draggingView.isDraggable();
         }
 
         @Override
         public void onViewReleased(View releasedChild, float xvel, float yvel) {
-            DraggableCardItem itemView = (DraggableCardItem) releasedChild;
+            DraggableCardItemNew itemView = (DraggableCardItemNew) releasedChild;
             itemView.onDragRelease();
         }
 
         @Override
         public int clampViewPositionHorizontal(View child, int left, int dx) {
-            DraggableCardItem itemView = (DraggableCardItem) child;
+            DraggableCardItemNew itemView = (DraggableCardItemNew) child;
             return itemView.computeDraggingX(dx);
         }
 
         @Override
         public int clampViewPositionVertical(View child, int top, int dy) {
-            DraggableCardItem itemView = (DraggableCardItem) child;
+            DraggableCardItemNew itemView = (DraggableCardItemNew) child;
             return itemView.computeDraggingY(dy);
         }
     }
@@ -236,7 +236,7 @@ public class DraggableCardView extends ViewGroup {
     /**
      * 根据draggingView的位置，看看是否需要与其它itemView互换位置
      */
-    private void switchPositionIfNeeded(DraggableCardItem draggingView) {
+    private void switchPositionIfNeeded(DraggableCardItemNew draggingView) {
         if (Utils.ENABLE_GLOBAL_LOG) {
             mLog.d(TAG, "switchPositionIfNeeded");
         }
@@ -247,7 +247,7 @@ public class DraggableCardView extends ViewGroup {
         int fromStatus = -1, toStatus = draggingView.getStatus();
 
         switch (draggingView.getStatus()) {
-            case DraggableCardItem.STATUS_LEFT_TOP:
+            case DraggableCardItemNew.STATUS_LEFT_TOP:
                 // 拖动的是左上角的大图
                 // 依次将小图向上顶
                 int fromChangeIndex = 0;
@@ -255,23 +255,23 @@ public class DraggableCardView extends ViewGroup {
                     // 大图往右越过了位置，一定会跟右侧的三个View交换位置才行
                     if (centerY < everyWidth) {
                         // 跟右上角的View交换位置
-                        fromChangeIndex = DraggableCardItem.STATUS_RIGHT_TOP;
+                        fromChangeIndex = DraggableCardItemNew.STATUS_RIGHT_TOP;
                     } else if (centerY < everyWidth * 2) {
-                        fromChangeIndex = DraggableCardItem.STATUS_RIGHT_MIDDLE;
+                        fromChangeIndex = DraggableCardItemNew.STATUS_RIGHT_MIDDLE;
                     } else {
-                        fromChangeIndex = DraggableCardItem.STATUS_RIGHT_BOTTOM;
+                        fromChangeIndex = DraggableCardItemNew.STATUS_RIGHT_BOTTOM;
                     }
                 } else if (centerY > everyWidth * 2) {
                     if (centerX < everyWidth) {
-                        fromChangeIndex = DraggableCardItem.STATUS_LEFT_BOTTOM;
+                        fromChangeIndex = DraggableCardItemNew.STATUS_LEFT_BOTTOM;
                     } else if (centerX < everyWidth * 2) {
-                        fromChangeIndex = DraggableCardItem.STATUS_MIDDLE_BOTTOM;
+                        fromChangeIndex = DraggableCardItemNew.STATUS_MIDDLE_BOTTOM;
                     } else {
-                        fromChangeIndex = DraggableCardItem.STATUS_RIGHT_BOTTOM;
+                        fromChangeIndex = DraggableCardItemNew.STATUS_RIGHT_BOTTOM;
                     }
                 }
 
-                DraggableCardItem toItemView = getItemViewByStatus(fromChangeIndex);
+                DraggableCardItemNew toItemView = getItemViewByStatus(fromChangeIndex);
                 if (!toItemView.isDraggable()) {
                     return;
                 }
@@ -281,46 +281,46 @@ public class DraggableCardView extends ViewGroup {
                 }
                 draggingView.setStatus(fromChangeIndex);
                 return;
-            case DraggableCardItem.STATUS_RIGHT_TOP:
+            case DraggableCardItemNew.STATUS_RIGHT_TOP:
                 if (centerX < everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_LEFT_TOP;
+                    fromStatus = DraggableCardItemNew.STATUS_LEFT_TOP;
                 } else if (centerY > everyWidth) {
-                    fromStatus = DraggableCardItem.STATUS_RIGHT_MIDDLE;
+                    fromStatus = DraggableCardItemNew.STATUS_RIGHT_MIDDLE;
                 }
                 break;
 
-            case DraggableCardItem.STATUS_RIGHT_MIDDLE:
+            case DraggableCardItemNew.STATUS_RIGHT_MIDDLE:
                 if (centerX < everyWidth * 2 && centerY < everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_LEFT_TOP;
+                    fromStatus = DraggableCardItemNew.STATUS_LEFT_TOP;
                 } else if (centerY < everyWidth) {
-                    fromStatus = DraggableCardItem.STATUS_RIGHT_TOP;
+                    fromStatus = DraggableCardItemNew.STATUS_RIGHT_TOP;
                 } else if (centerY > everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_RIGHT_BOTTOM;
+                    fromStatus = DraggableCardItemNew.STATUS_RIGHT_BOTTOM;
                 }
                 break;
-            case DraggableCardItem.STATUS_RIGHT_BOTTOM:
+            case DraggableCardItemNew.STATUS_RIGHT_BOTTOM:
                 if (centerX < everyWidth * 2 && centerY < everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_LEFT_TOP;
+                    fromStatus = DraggableCardItemNew.STATUS_LEFT_TOP;
                 } else if (centerX < everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_MIDDLE_BOTTOM;
+                    fromStatus = DraggableCardItemNew.STATUS_MIDDLE_BOTTOM;
                 } else if (centerY < everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_RIGHT_MIDDLE;
+                    fromStatus = DraggableCardItemNew.STATUS_RIGHT_MIDDLE;
                 }
                 break;
-            case DraggableCardItem.STATUS_MIDDLE_BOTTOM:
+            case DraggableCardItemNew.STATUS_MIDDLE_BOTTOM:
                 if (centerX < everyWidth) {
-                    fromStatus = DraggableCardItem.STATUS_LEFT_BOTTOM;
+                    fromStatus = DraggableCardItemNew.STATUS_LEFT_BOTTOM;
                 } else if (centerX > everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_RIGHT_BOTTOM;
+                    fromStatus = DraggableCardItemNew.STATUS_RIGHT_BOTTOM;
                 } else if (centerY < everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_LEFT_TOP;
+                    fromStatus = DraggableCardItemNew.STATUS_LEFT_TOP;
                 }
                 break;
-            case DraggableCardItem.STATUS_LEFT_BOTTOM:
+            case DraggableCardItemNew.STATUS_LEFT_BOTTOM:
                 if (centerX > everyWidth) {
-                    fromStatus = DraggableCardItem.STATUS_MIDDLE_BOTTOM;
+                    fromStatus = DraggableCardItemNew.STATUS_MIDDLE_BOTTOM;
                 } else if (centerY < everyWidth * 2) {
-                    fromStatus = DraggableCardItem.STATUS_LEFT_TOP;
+                    fromStatus = DraggableCardItemNew.STATUS_LEFT_TOP;
                 }
                 break;
             default:
@@ -346,7 +346,7 @@ public class DraggableCardView extends ViewGroup {
         if (Utils.ENABLE_GLOBAL_LOG) {
             mLog.d(TAG, "switchPosition");
         }
-        DraggableCardItem itemView = getItemViewByStatus(fromStatus);
+        DraggableCardItemNew itemView = getItemViewByStatus(fromStatus);
         if (itemView.isDraggable()) {
             itemView.switchPosition(toStatus);
             return true;
@@ -357,13 +357,13 @@ public class DraggableCardView extends ViewGroup {
     /**
      * 根据status获取itemView
      */
-    private DraggableCardItem getItemViewByStatus(int status) {
+    private DraggableCardItemNew getItemViewByStatus(int status) {
         if (Utils.ENABLE_GLOBAL_LOG) {
             mLog.d(TAG, "getItemViewByStatus");
         }
         int num = getChildCount();
         for (int i = 0; i < num; i++) {
-            DraggableCardItem itemView = (DraggableCardItem) getChildAt(i);
+            DraggableCardItemNew itemView = (DraggableCardItemNew) getChildAt(i);
             if (itemView.getStatus() == status) {
                 return itemView;
             }
@@ -397,44 +397,44 @@ public class DraggableCardView extends ViewGroup {
         float scaleRate = (float) everyLength / sideLength;
         int num = getChildCount();
         for (int i = 0; i < num; i++) {
-            DraggableCardItem itemView = (DraggableCardItem) getChildAt(i);
+            DraggableCardItemNew itemView = (DraggableCardItemNew) getChildAt(i);
             itemView.setScaleRate(scaleRate);
             switch (itemView.getStatus()) {
-                case DraggableCardItem.STATUS_LEFT_TOP:
+                case DraggableCardItemNew.STATUS_LEFT_TOP:
                     int centerPos = spaceInterval + everyLength + spaceInterval / 2;
                     itemLeft = centerPos - halfSideLength;
                     itemRight = centerPos + halfSideLength;
                     itemTop = centerPos - halfSideLength;
                     itemBottom = centerPos + halfSideLength;
                     break;
-                case DraggableCardItem.STATUS_RIGHT_TOP:
+                case DraggableCardItemNew.STATUS_RIGHT_TOP:
                     itemLeft = rightCenter - halfSideLength;
                     itemRight = rightCenter + halfSideLength;
                     int hCenter1 = spaceInterval + everyLength / 2;
                     itemTop = hCenter1 - halfSideLength;
                     itemBottom = hCenter1 + halfSideLength;
                     break;
-                case DraggableCardItem.STATUS_RIGHT_MIDDLE:
+                case DraggableCardItemNew.STATUS_RIGHT_MIDDLE:
                     itemLeft = rightCenter - halfSideLength;
                     itemRight = rightCenter + halfSideLength;
                     int hCenter2 = t + getMeasuredHeight() / 2;
                     itemTop = hCenter2 - halfSideLength;
                     itemBottom = hCenter2 + halfSideLength;
                     break;
-                case DraggableCardItem.STATUS_RIGHT_BOTTOM:
+                case DraggableCardItemNew.STATUS_RIGHT_BOTTOM:
                     itemLeft = rightCenter - halfSideLength;
                     itemRight = rightCenter + halfSideLength;
                     itemTop = bottomCenter - halfSideLength;
                     itemBottom = bottomCenter + halfSideLength;
                     break;
-                case DraggableCardItem.STATUS_MIDDLE_BOTTOM:
+                case DraggableCardItemNew.STATUS_MIDDLE_BOTTOM:
                     int vCenter1 = l + getMeasuredWidth() / 2;
                     itemLeft = vCenter1 - halfSideLength;
                     itemRight = vCenter1 + halfSideLength;
                     itemTop = bottomCenter - halfSideLength;
                     itemBottom = bottomCenter + halfSideLength;
                     break;
-                case DraggableCardItem.STATUS_LEFT_BOTTOM:
+                case DraggableCardItemNew.STATUS_LEFT_BOTTOM:
                     int vCenter2 = l + spaceInterval + everyLength / 2;
                     itemLeft = vCenter2 - halfSideLength;
                     itemRight = vCenter2 + halfSideLength;
@@ -443,7 +443,7 @@ public class DraggableCardView extends ViewGroup {
                     break;
             }
 
-            ViewGroup.LayoutParams lp = itemView.getLayoutParams();
+            LayoutParams lp = itemView.getLayoutParams();
             lp.width = sideLength;
             lp.height = sideLength;
             itemView.setLayoutParams(lp);
@@ -496,7 +496,7 @@ public class DraggableCardView extends ViewGroup {
      */
     private void bringToFrontWhenTouchDown(final int downX, final int downY) {
         int statusIndex = getStatusByDownPoint(downX, downY);
-        final DraggableCardItem itemView = getItemViewByStatus(statusIndex);
+        final DraggableCardItemNew itemView = getItemViewByStatus(statusIndex);
         if (indexOfChild(itemView) != getChildCount() - 1) {
             bringChildToFront(itemView);
         }
@@ -527,23 +527,23 @@ public class DraggableCardView extends ViewGroup {
         int everyWidth = getMeasuredWidth() / 3;
         if (downX < everyWidth) {
             if (downY < everyWidth * 2) {
-                return DraggableCardItem.STATUS_LEFT_TOP;
+                return DraggableCardItemNew.STATUS_LEFT_TOP;
             } else {
-                return DraggableCardItem.STATUS_LEFT_BOTTOM;
+                return DraggableCardItemNew.STATUS_LEFT_BOTTOM;
             }
         } else if (downX < everyWidth * 2) {
             if (downY < everyWidth * 2) {
-                return DraggableCardItem.STATUS_LEFT_TOP;
+                return DraggableCardItemNew.STATUS_LEFT_TOP;
             } else {
-                return DraggableCardItem.STATUS_MIDDLE_BOTTOM;
+                return DraggableCardItemNew.STATUS_MIDDLE_BOTTOM;
             }
         } else {
             if (downY < everyWidth) {
-                return DraggableCardItem.STATUS_RIGHT_TOP;
+                return DraggableCardItemNew.STATUS_RIGHT_TOP;
             } else if (downY < everyWidth * 2) {
-                return DraggableCardItem.STATUS_RIGHT_MIDDLE;
+                return DraggableCardItemNew.STATUS_RIGHT_MIDDLE;
             } else {
-                return DraggableCardItem.STATUS_RIGHT_BOTTOM;
+                return DraggableCardItemNew.STATUS_RIGHT_BOTTOM;
             }
         }
     }

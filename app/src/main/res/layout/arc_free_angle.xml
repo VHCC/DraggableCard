@@ -3,6 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@id/note_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:textSize="16sp" />
+
     <com.vhcc.arclayoutlibs.ArcLayout
         android:id="@id/arc_layout"
         android:layout_width="match_parent"
@@ -13,49 +20,36 @@
         app:arc_origin="center"
         app:arc_radius="@dimen/layout_radius_small">
 
-        <Button
+        <com.vhcc.arclayoutlibs.drag.DraggableCardItemNew
             style="@style/Item.Large"
             android:background="@drawable/light_blue_oval_selector"
             android:text="A"
             app:arc_angle="-45" />
 
-        <Button
+        <com.vhcc.arclayoutlibs.drag.DraggableCardItemNew
             style="@style/Item.Large"
             android:background="@drawable/cyan_oval_selector"
             android:text="B"
             app:arc_angle="-15" />
 
-        <Button
+        <com.vhcc.arclayoutlibs.drag.DraggableCardItemNew
             style="@style/Item.Large"
             android:background="@drawable/teal_oval_selector"
             android:text="C"
             app:arc_angle="15" />
 
-        <Button
+        <com.vhcc.arclayoutlibs.drag.DraggableCardItemNew
             style="@style/Item.Large"
             android:background="@drawable/green_oval_selector"
             android:text="D"
             app:arc_angle="45" />
 
-        <Button
+        <com.vhcc.arclayoutlibs.drag.DraggableCardItemNew
             style="@style/Item.Large"
             android:background="@drawable/light_green_oval_selector"
             android:text="E"
-            app:arc_angle="0" />
-
-        <com.vhcc.arclayoutlibs.drag.DraggableCardView
-            android:id="@+id/drag_square"
-            android:layout_width="match_parent"
-            android:background="#ffffff"
-            android:layout_height="wrap_content" />
+            app:arc_angle="180" />
 
     </com.vhcc.arclayoutlibs.ArcLayout>
-
-    <TextView
-        android:id="@id/note_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:textSize="16sp" />
 
 </FrameLayout>

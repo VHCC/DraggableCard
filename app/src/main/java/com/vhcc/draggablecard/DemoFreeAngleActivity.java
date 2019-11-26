@@ -38,7 +38,7 @@ public class DemoFreeAngleActivity extends AppCompatActivity implements View.OnC
             arcLayout.getChildAt(i).setOnClickListener(this);
         }
 
-        TextView note = (TextView) findViewById(R.id.note_text);
+        TextView note = findViewById(R.id.note_text);
         note.setText("123");
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) note.getLayoutParams();
         switch (Arc.CENTER) {
@@ -58,7 +58,7 @@ public class DemoFreeAngleActivity extends AppCompatActivity implements View.OnC
 
         ActionBar bar = getSupportActionBar();
         bar.setTitle("Advanced: Free angle");
-        bar.setDisplayHomeAsUpEnabled(true);
+        bar.setDisplayHomeAsUpEnabled(false);
 
     }
 

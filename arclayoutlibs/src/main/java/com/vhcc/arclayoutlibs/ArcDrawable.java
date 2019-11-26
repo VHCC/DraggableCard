@@ -28,12 +28,18 @@ import android.os.Build;
 
 public class ArcDrawable extends Drawable {
 
+  private static final Utils mLog = new Utils(true);
+  private final String TAG = getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+
   private final Paint arcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
   private Path arcPath = null;
   private Arc arc;
   private int arcRadius;
 
   public ArcDrawable(Arc arc, int radius, int color) {
+    if (Utils.ENABLE_GLOBAL_LOG) {
+      mLog.d(TAG, " *** ArcDrawable *** ");
+    }
     this.arc = arc;
     this.arcRadius = radius;
     this.arcPaint.setColor(color);
