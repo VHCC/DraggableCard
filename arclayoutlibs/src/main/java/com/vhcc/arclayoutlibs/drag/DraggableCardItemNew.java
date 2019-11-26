@@ -15,12 +15,18 @@ import com.facebook.rebound.SimpleSpringListener;
 import com.facebook.rebound.Spring;
 import com.facebook.rebound.SpringConfig;
 import com.facebook.rebound.SpringSystem;
+import com.vhcc.arclayoutlibs.ArcLayout;
 import com.vhcc.arclayoutlibs.R;
+import com.vhcc.arclayoutlibs.Utils;
 
 /**
  * Created by xmuSistone on 2016/5/23.
  */
 public class DraggableCardItemNew extends FrameLayout {
+
+    private static final Utils mLog = new Utils(true);
+    private final String TAG = getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+
 
     public static final int STATUS_LEFT_TOP = 0;
     public static final int STATUS_RIGHT_TOP = 1;
@@ -41,7 +47,8 @@ public class DraggableCardItemNew extends FrameLayout {
     private Spring springX, springY;
     private ObjectAnimator scaleAnimator;
     private boolean hasSetCurrentSpringValue = false;
-    private DraggableCardViewNew parentView;
+//    private DraggableCardViewNew parentView;
+    private ArcLayout parentView;
     private SpringConfig springConfigCommon = SpringConfig.fromOrigamiTensionAndFriction(140, 7);
     private int moveDstX = Integer.MIN_VALUE, moveDstY = Integer.MIN_VALUE;
     private OnClickListener dialogListener;
@@ -143,6 +150,9 @@ public class DraggableCardItemNew extends FrameLayout {
      * 调整ImageView的宽度和高度各为FrameLayout的一半
      */
     private void adjustImageView() {
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " * adjustImageView, status= %d", status);
+        }
         if (status != STATUS_LEFT_TOP) {
             imageView.setScaleX(scaleRate);
             imageView.setScaleY(scaleRate);
@@ -155,6 +165,9 @@ public class DraggableCardItemNew extends FrameLayout {
     }
 
     public void setScaleRate(float scaleRate) {
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " * setScaleRate");
+        }
         this.scaleRate = scaleRate;
         this.smallerRate = scaleRate * 0.9f;
     }
@@ -174,10 +187,10 @@ public class DraggableCardItemNew extends FrameLayout {
         }
 
         this.status = toStatus;
-//        Point point = parentView.getOriginViewPos(status);
-//        this.moveDstX = point.x;
-//        this.moveDstY = point.y;
-//        animTo(moveDstX, moveDstY);
+        Point point = parentView.getOriginViewPos(status);
+        this.moveDstX = point.x;
+        this.moveDstY = point.y;
+        animTo(moveDstX, moveDstY);
     }
 
     public void animTo(int xPos, int yPos) {
@@ -189,6 +202,9 @@ public class DraggableCardItemNew extends FrameLayout {
      * 设置缩放大小
      */
     public void scaleSize(int scaleLevel) {
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " * scaleSize");
+        }
         float rate = scaleRate;
         if (scaleLevel == SCALE_LEVEL_1) {
             rate = 1.0f;
@@ -261,11 +277,17 @@ public class DraggableCardItemNew extends FrameLayout {
         return status;
     }
 
-    public void setParentView(DraggableCardViewNew parentView) {
+    public void setParentView(ArcLayout parentView) {
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " * setParentView");
+        }
+
         this.parentView = parentView;
     }
 
     public void onDragRelease() {
+
+
         if (status == DraggableCardItemNew.STATUS_LEFT_TOP) {
             scaleSize(DraggableCardItemNew.SCALE_LEVEL_1);
         } else {
@@ -277,11 +299,15 @@ public class DraggableCardItemNew extends FrameLayout {
         springX.setSpringConfig(springConfigCommon);
         springY.setSpringConfig(springConfigCommon);
 
-//        Point point = parentView.getOriginViewPos(status);
-//        setCurrentSpringPos(getLeft(), getTop());
-//        this.moveDstX = point.x;
-//        this.moveDstY = point.y;
-//        animTo(moveDstX, moveDstY);
+        Point point = parentView.getOriginViewPos(status);
+        setCurrentSpringPos(getLeft(), getTop());
+        this.moveDstX = point.x;
+        this.moveDstY = point.y;
+        animTo(moveDstX, moveDstY);
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " * onDragRelease, point.x= %d, point.y= %d",
+                    point.x, point.y);
+        }
     }
 
     public void fillImageView(String imagePath) {

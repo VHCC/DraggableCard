@@ -134,7 +134,7 @@ public class DraggableCardViewNew extends ViewGroup {
             // 渲染结束之后，朝viewGroup中添加子View
             DraggableCardItemNew itemView = new DraggableCardItemNew(getContext());
             itemView.setStatus(allCards[index]);
-            itemView.setParentView(this);
+//            itemView.setParentView(this);
             //  原始位置点，由此初始化，一定与子View的status绑定
             originViewPositionList.add(new Point());
             addView(itemView);

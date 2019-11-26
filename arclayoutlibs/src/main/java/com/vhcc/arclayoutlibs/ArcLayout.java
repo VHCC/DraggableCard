@@ -58,6 +58,9 @@ public class ArcLayout extends ViewGroup {
     private static final boolean DEFAULT_REVERSE_ANGLE = false;
 
     private final WeakHashMap<View, Float> childAngleHolder = new WeakHashMap<>();
+
+    private List<View> childViewList = new ArrayList<>();
+
     private Arc arc = Arc.CENTER;
     private ArcDrawable arcDrawable;
     private int axisRadius;
@@ -216,7 +219,7 @@ public class ArcLayout extends ViewGroup {
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, "dispatchTouchEvent");
+//            mLog.d(TAG, "dispatchTouchEvent");
         }
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             // 手指按下的时候，需要把某些view bringToFront，否则的话，tryCapture将不按预期工作
@@ -311,6 +314,12 @@ public class ArcLayout extends ViewGroup {
         int num = getChildCount();
         for (int i = 0; i < num; i++) {
             DraggableCardItemNew itemView = (DraggableCardItemNew) getChildAt(i);
+            if (Utils.ENABLE_GLOBAL_LOG) {
+                mLog.d(TAG, " - itemView.getStatus= %d ", itemView.getStatus());
+            }
+
+
+//            DraggableCardItemNew itemView = (DraggableCardItemNew) childViewList.get(i);
 //            if (itemView.getStatus() == status) {
                 return itemView;
 //            }
@@ -323,10 +332,16 @@ public class ArcLayout extends ViewGroup {
      */
     private class DragHelperCallback extends ViewDragHelper.Callback {
 
+        private final String TAG = getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+
         @Override
         public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
             if (Utils.ENABLE_GLOBAL_LOG) {
-                mLog.d(TAG, " - onViewPositionChanged");
+                mLog.d(TAG, "changedView= " + changedView.getClass().getSimpleName()
+                        + "@" + changedView.hashCode());
+
+                mLog.d(TAG, " - onViewPositionChanged, left= %d, top= %d, dx= %d, dy= %d",
+                left, top, dx, dy);
             }
             // draggingView拖动的时候，如果与其它子view交换位置，其他子view位置改变，也会进入这个回调
             // 所以此处加了一层判断，剔除不关心的回调，以优化性能
@@ -339,7 +354,7 @@ public class ArcLayout extends ViewGroup {
         @Override
         public boolean tryCaptureView(View child, int pointerId) {
             if (Utils.ENABLE_GLOBAL_LOG) {
-                mLog.d(TAG, " - tryCaptureView");
+                mLog.d(TAG, " - tryCaptureView, pointerId= %d", pointerId);
             }
             // 按下的时候，缩放到最小的级别
             draggingView = (DraggableCardItemNew) child;
@@ -349,7 +364,8 @@ public class ArcLayout extends ViewGroup {
         @Override
         public void onViewReleased(View releasedChild, float xvel, float yvel) {
             if (Utils.ENABLE_GLOBAL_LOG) {
-                mLog.d(TAG, " - onViewReleased");
+                mLog.d(TAG, " - onViewReleased, xvel= %f, yvel= %f",
+                        xvel, yvel);
             }
             DraggableCardItemNew itemView = (DraggableCardItemNew) releasedChild;
             itemView.onDragRelease();
@@ -358,7 +374,8 @@ public class ArcLayout extends ViewGroup {
         @Override
         public int clampViewPositionHorizontal(View child, int left, int dx) {
             if (Utils.ENABLE_GLOBAL_LOG) {
-                mLog.d(TAG, " - clampViewPositionHorizontal");
+//                mLog.d(TAG, " - clampViewPositionHorizontal, left= %d, dx= %d",
+//                        left, dx);
             }
             DraggableCardItemNew itemView = (DraggableCardItemNew) child;
             return itemView.computeDraggingX(dx);
@@ -367,7 +384,8 @@ public class ArcLayout extends ViewGroup {
         @Override
         public int clampViewPositionVertical(View child, int top, int dy) {
             if (Utils.ENABLE_GLOBAL_LOG) {
-                mLog.d(TAG, " - clampViewPositionVertical");
+//                mLog.d(TAG, " - clampViewPositionVertical, top= %f, dy= %f",
+//                        top, dy);
             }
             DraggableCardItemNew itemView = (DraggableCardItemNew) child;
             return itemView.computeDraggingY(dy);
@@ -405,7 +423,7 @@ public class ArcLayout extends ViewGroup {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " * onTouchEvent");
+//            mLog.d(TAG, " - onTouchEvent");
         }
         try {
             // 该行代码可能会抛异常，正式发布时请将这行代码加上try catch
@@ -432,6 +450,16 @@ public class ArcLayout extends ViewGroup {
         }
     }
 
+    public Point getOriginViewPos(int status) {
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, "getOriginViewPos, status= %d", status);
+        }
+        return originViewPositionList.get(status);
+    }
+
+
+
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (Utils.ENABLE_GLOBAL_LOG) {
@@ -452,6 +480,8 @@ public class ArcLayout extends ViewGroup {
             mLog.d(TAG, " - setMeasuredDimension: w=%d, h=%d", size.x, size.y);
         }
     }
+
+    private boolean isChildInit = false;
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
@@ -476,8 +506,18 @@ public class ArcLayout extends ViewGroup {
             mLog.d(TAG, "ChildCount= %d", getChildCount());
         }
 
-        for (int i = 0, size = getChildCount(); i < size; i++) {
-            final View child = getChildAt(i);
+        if (!isChildInit) {
+            for (int i = 0, size = getChildCount(); i < size; i++) {
+                final View child = getChildAt(i);
+                childViewList.add(child);
+                ((DraggableCardItemNew) child).setParentView(this);
+                ((DraggableCardItemNew) child).setStatus(i);
+            }
+            isChildInit = true;
+        }
+
+        for (int i = 0; i < childViewList.size(); i++) {
+            final View child = childViewList.get(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
             }
@@ -502,14 +542,20 @@ public class ArcLayout extends ViewGroup {
             childMeasureBy(child, x, y);
             childLayoutBy(child, x, y);
 
-            childAngleHolder.put(child, childAngle);
+            if (Utils.ENABLE_GLOBAL_LOG) {
+                mLog.d(TAG, " - Child= " + child.getClass().getSimpleName() + "@" + child.hashCode());
+            }
+//                childAngleHolder.put(child, childAngle);
         }
+        firstLayout = false;
+
+
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " * onDraw");
+            mLog.d(TAG, " * onDraw, isInEditMode() " + isInEditMode());
         }
         if (isInEditMode()) {
             return;
@@ -648,6 +694,8 @@ public class ArcLayout extends ViewGroup {
 
     }
 
+    private boolean firstLayout = true;
+
     protected void childLayoutBy(View child, int x, int y) {
         if (Utils.ENABLE_GLOBAL_LOG) {
             mLog.d(TAG, " - childLayoutBy: x=%d, y=%d", x, y);
@@ -687,11 +735,17 @@ public class ArcLayout extends ViewGroup {
         }
 
         child.layout(left, top, left + width, top + height);
-
-        if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " - l=%d, t=%d, r=%d, b=%d", left, top, left + width, top + height);
+        if (firstLayout) {
+            if (Utils.ENABLE_GLOBAL_LOG) {
+                mLog.d(TAG, "firstLayout= " + firstLayout);
+            }
+            originViewPositionList.add(new Point(left, top));
+            child.requestLayout();
         }
 
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " --- l=%d, t=%d, r=%d, b=%d", left, top, left + width, top + height);
+        }
     }
 
     @Override
