@@ -31,7 +31,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
-import com.vhcc.arclayoutlibs.drag.DraggableCardItemNew;
+import com.vhcc.arclayoutlibs.drag.DraggableCardItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +89,7 @@ public class ArcLayout extends ViewGroup {
     /**
      * 正在拖拽的view
      */
-    private DraggableCardItemNew draggingView;
+    private DraggableCardItem draggingView;
 
     public ArcLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -226,7 +226,6 @@ public class ArcLayout extends ViewGroup {
             downX = (int) ev.getX();
             downY = (int) ev.getY();
             downTime = System.currentTimeMillis();
-            bringToFrontWhenTouchDown(downX, downY);
         } else if (ev.getAction() == MotionEvent.ACTION_UP) {
             if (draggingView != null) {
                 draggingView.onDragRelease();
@@ -241,91 +240,6 @@ public class ArcLayout extends ViewGroup {
         return super.dispatchTouchEvent(ev);
     }
 
-    /**
-     * 按下时根据触点的位置，将某个view bring到前台
-     */
-    private void bringToFrontWhenTouchDown(final int downX, final int downY) {
-        if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " - bringToFrontWhenTouchDown, x= %d, y= %d", downX, downY);
-        }
-        int statusIndex = getStatusByDownPoint(downX, downY);
-        final DraggableCardItemNew itemView = getItemViewByStatus(statusIndex);
-        if (indexOfChild(itemView) != getChildCount() - 1) {
-            bringChildToFront(itemView);
-        }
-        if (!itemView.isDraggable()) {
-            getParent().requestDisallowInterceptTouchEvent(false);
-            return;
-        } else {
-            getParent().requestDisallowInterceptTouchEvent(true);
-        }
-
-        itemView.saveAnchorInfo(downX, downY);
-        moveAnchorThread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    sleep(INTERCEPT_TIME_SLOP);
-                } catch (InterruptedException e) {
-                }
-
-                Message msg = anchorHandler.obtainMessage();
-                msg.sendToTarget();
-            }
-        };
-        moveAnchorThread.start();
-    }
-
-    private int getStatusByDownPoint(int downX, int downY) {
-        if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " - getStatusByDownPoint, x= %d, y= %d", downX, downY);
-        }
-        int everyWidth = getMeasuredWidth() / 3;
-        if (downX < everyWidth) {
-            if (downY < everyWidth * 2) {
-                return DraggableCardItemNew.STATUS_LEFT_TOP;
-            } else {
-                return DraggableCardItemNew.STATUS_LEFT_BOTTOM;
-            }
-        } else if (downX < everyWidth * 2) {
-            if (downY < everyWidth * 2) {
-                return DraggableCardItemNew.STATUS_LEFT_TOP;
-            } else {
-                return DraggableCardItemNew.STATUS_MIDDLE_BOTTOM;
-            }
-        } else {
-            if (downY < everyWidth) {
-                return DraggableCardItemNew.STATUS_RIGHT_TOP;
-            } else if (downY < everyWidth * 2) {
-                return DraggableCardItemNew.STATUS_RIGHT_MIDDLE;
-            } else {
-                return DraggableCardItemNew.STATUS_RIGHT_BOTTOM;
-            }
-        }
-    }
-
-    /**
-     * 根据status获取itemView
-     */
-    private DraggableCardItemNew getItemViewByStatus(int status) {
-        if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " - getItemViewByStatus= %d, ChildCount= %d", status, getChildCount());
-        }
-        int num = getChildCount();
-        for (int i = 0; i < num; i++) {
-            DraggableCardItemNew itemView = (DraggableCardItemNew) getChildAt(i);
-            if (Utils.ENABLE_GLOBAL_LOG) {
-                mLog.d(TAG, " - itemView.getStatus= %d ", itemView.getStatus());
-            }
-
-
-//            DraggableCardItemNew itemView = (DraggableCardItemNew) childViewList.get(i);
-//            if (itemView.getStatus() == status) {
-                return itemView;
-//            }
-        }
-        return null;
-    }
 
     /**
      * 这是viewdraghelper拖拽效果的主要逻辑
@@ -337,16 +251,16 @@ public class ArcLayout extends ViewGroup {
         @Override
         public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
             if (Utils.ENABLE_GLOBAL_LOG) {
-                mLog.d(TAG, "changedView= " + changedView.getClass().getSimpleName()
-                        + "@" + changedView.hashCode());
-
-                mLog.d(TAG, " - onViewPositionChanged, left= %d, top= %d, dx= %d, dy= %d",
-                left, top, dx, dy);
+//                mLog.d(TAG, "changedView= " + changedView.getClass().getSimpleName()
+//                        + "@" + changedView.hashCode());
+//
+//                mLog.d(TAG, " - onViewPositionChanged, left= %d, top= %d, dx= %d, dy= %d",
+//                left, top, dx, dy);
             }
             // draggingView拖动的时候，如果与其它子view交换位置，其他子view位置改变，也会进入这个回调
             // 所以此处加了一层判断，剔除不关心的回调，以优化性能
             if (changedView == draggingView) {
-                DraggableCardItemNew changedItemView = (DraggableCardItemNew) changedView;
+                DraggableCardItem changedItemView = (DraggableCardItem) changedView;
 //                switchPositionIfNeeded(changedItemView);
             }
         }
@@ -357,7 +271,37 @@ public class ArcLayout extends ViewGroup {
                 mLog.d(TAG, " - tryCaptureView, pointerId= %d", pointerId);
             }
             // 按下的时候，缩放到最小的级别
-            draggingView = (DraggableCardItemNew) child;
+            draggingView = (DraggableCardItem) child;
+
+            if (Utils.ENABLE_GLOBAL_LOG) {
+                mLog.d(TAG, " - indexOfChild(itemView)= " + indexOfChild(draggingView));
+            }
+            if (indexOfChild(draggingView) != getChildCount() - 1) {
+                bringChildToFront(draggingView);
+            }
+            if (!draggingView.isDraggable()) {
+                getParent().requestDisallowInterceptTouchEvent(false);
+                return true;
+            } else {
+                getParent().requestDisallowInterceptTouchEvent(true);
+            }
+
+            draggingView.saveAnchorInfo(downX, downY);
+            moveAnchorThread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        sleep(INTERCEPT_TIME_SLOP);
+                    } catch (InterruptedException e) {
+                    }
+
+                    Message msg = anchorHandler.obtainMessage();
+                    msg.sendToTarget();
+                }
+            };
+            moveAnchorThread.start();
+
+
             return draggingView.isDraggable();
         }
 
@@ -367,7 +311,7 @@ public class ArcLayout extends ViewGroup {
                 mLog.d(TAG, " - onViewReleased, xvel= %f, yvel= %f",
                         xvel, yvel);
             }
-            DraggableCardItemNew itemView = (DraggableCardItemNew) releasedChild;
+            DraggableCardItem itemView = (DraggableCardItem) releasedChild;
             itemView.onDragRelease();
         }
 
@@ -377,7 +321,7 @@ public class ArcLayout extends ViewGroup {
 //                mLog.d(TAG, " - clampViewPositionHorizontal, left= %d, dx= %d",
 //                        left, dx);
             }
-            DraggableCardItemNew itemView = (DraggableCardItemNew) child;
+            DraggableCardItem itemView = (DraggableCardItem) child;
             return itemView.computeDraggingX(dx);
         }
 
@@ -387,7 +331,7 @@ public class ArcLayout extends ViewGroup {
 //                mLog.d(TAG, " - clampViewPositionVertical, top= %f, dy= %f",
 //                        top, dy);
             }
-            DraggableCardItemNew itemView = (DraggableCardItemNew) child;
+            DraggableCardItem itemView = (DraggableCardItem) child;
             return itemView.computeDraggingY(dy);
         }
     }
@@ -395,7 +339,7 @@ public class ArcLayout extends ViewGroup {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " * onInterceptTouchEvent");
+//            mLog.d(TAG, " * onInterceptTouchEvent");
         }
         if (downTime > 0 && System.currentTimeMillis() - downTime > INTERCEPT_TIME_SLOP) {
             return true;
@@ -463,21 +407,17 @@ public class ArcLayout extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, "onMeasure: w=%s, h=%s",
-                    MeasureSpec.toString(widthMeasureSpec),
-                    MeasureSpec.toString(heightMeasureSpec));
+//            mLog.d(TAG, "onMeasure: w=%s, h=%s",
+//                    MeasureSpec.toString(widthMeasureSpec),
+//                    MeasureSpec.toString(heightMeasureSpec));
         }
-        measureChildren(widthMeasureSpec, widthMeasureSpec);
-//        int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
-//        int width = resolveSizeAndState(maxWidth, widthMeasureSpec, 0);
-//        setMeasuredDimension(width, width);
+//        measureChildren(widthMeasureSpec, widthMeasureSpec);
         size.x = Utils.computeMeasureSize(widthMeasureSpec, arcDrawable.getIntrinsicWidth());
         size.y = Utils.computeMeasureSize(heightMeasureSpec, arcDrawable.getIntrinsicHeight());
-
         setMeasuredDimension(size.x, size.y);
 
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " - setMeasuredDimension: w=%d, h=%d", size.x, size.y);
+//            mLog.d(TAG, " - setMeasuredDimension: w=%d, h=%d", size.x, size.y);
         }
     }
 
@@ -485,7 +425,7 @@ public class ArcLayout extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        if (Utils.ENABLE_GLOBAL_LOG) {
+        if (Utils.ENABLE_GLOBAL_LOG && firstLayout) {
             mLog.d(TAG, " * onLayout: l=%d, t=%d, r=%d, b=%d", l, t, r, b);
         }
 
@@ -502,16 +442,12 @@ public class ArcLayout extends ViewGroup {
 
         int arcIndex = 0;
 
-        if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, "ChildCount= %d", getChildCount());
-        }
-
         if (!isChildInit) {
             for (int i = 0, size = getChildCount(); i < size; i++) {
                 final View child = getChildAt(i);
                 childViewList.add(child);
-                ((DraggableCardItemNew) child).setParentView(this);
-                ((DraggableCardItemNew) child).setStatus(i);
+                ((DraggableCardItem) child).setParentView(this);
+                ((DraggableCardItem) child).setStatus(i);
             }
             isChildInit = true;
         }
@@ -535,14 +471,14 @@ public class ArcLayout extends ViewGroup {
             final int x = o.x + Arc.x(radius, childAngle);
             final int y = o.y + Arc.y(radius, childAngle);
 
-            if (Utils.ENABLE_GLOBAL_LOG) {
+            if (Utils.ENABLE_GLOBAL_LOG && firstLayout) {
                 mLog.d(TAG, "i= %d", i);
             }
 
             childMeasureBy(child, x, y);
             childLayoutBy(child, x, y);
 
-            if (Utils.ENABLE_GLOBAL_LOG) {
+            if (Utils.ENABLE_GLOBAL_LOG && firstLayout) {
                 mLog.d(TAG, " - Child= " + child.getClass().getSimpleName() + "@" + child.hashCode());
             }
 //                childAngleHolder.put(child, childAngle);
@@ -644,7 +580,7 @@ public class ArcLayout extends ViewGroup {
 
     protected void childMeasureBy(View child, int x, int y) {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " - childMeasureBy: x=%d, y=%d", x, y);
+//            mLog.d(TAG, " - childMeasureBy: x=%d, y=%d", x, y);
         }
 
         final LayoutParams lp = (LayoutParams) child.getLayoutParams();
@@ -697,7 +633,7 @@ public class ArcLayout extends ViewGroup {
     private boolean firstLayout = true;
 
     protected void childLayoutBy(View child, int x, int y) {
-        if (Utils.ENABLE_GLOBAL_LOG) {
+        if (Utils.ENABLE_GLOBAL_LOG && firstLayout) {
             mLog.d(TAG, " - childLayoutBy: x=%d, y=%d", x, y);
         }
 
@@ -736,14 +672,14 @@ public class ArcLayout extends ViewGroup {
 
         child.layout(left, top, left + width, top + height);
         if (firstLayout) {
-            if (Utils.ENABLE_GLOBAL_LOG) {
-                mLog.d(TAG, "firstLayout= " + firstLayout);
+            if (Utils.ENABLE_GLOBAL_LOG && firstLayout) {
+//                mLog.d(TAG, "firstLayout= " + firstLayout);
             }
             originViewPositionList.add(new Point(left, top));
-            child.requestLayout();
+//            child.requestLayout();
         }
 
-        if (Utils.ENABLE_GLOBAL_LOG) {
+        if (Utils.ENABLE_GLOBAL_LOG && firstLayout) {
             mLog.d(TAG, " --- l=%d, t=%d, r=%d, b=%d", left, top, left + width, top + height);
         }
     }
@@ -751,7 +687,7 @@ public class ArcLayout extends ViewGroup {
     @Override
     protected ViewGroup.LayoutParams generateLayoutParams(ViewGroup.LayoutParams p) {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " * generateLayoutParams 1");
+//            mLog.d(TAG, " * generateLayoutParams 1");
         }
         return new LayoutParams(p);
     }
@@ -759,7 +695,7 @@ public class ArcLayout extends ViewGroup {
     @Override
     public ViewGroup.LayoutParams generateLayoutParams(AttributeSet attrs) {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " * generateLayoutParams 2");
+//            mLog.d(TAG, " * generateLayoutParams 2");
         }
         return new LayoutParams(getContext(), attrs);
     }
@@ -767,7 +703,7 @@ public class ArcLayout extends ViewGroup {
     @Override
     protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
         if (Utils.ENABLE_GLOBAL_LOG) {
-            mLog.d(TAG, " * generateDefaultLayoutParams");
+//            mLog.d(TAG, " * generateDefaultLayoutParams");
         }
         return new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
     }

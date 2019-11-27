@@ -15,12 +15,18 @@ import com.facebook.rebound.SimpleSpringListener;
 import com.facebook.rebound.Spring;
 import com.facebook.rebound.SpringConfig;
 import com.facebook.rebound.SpringSystem;
+import com.vhcc.arclayoutlibs.ArcLayout;
 import com.vhcc.arclayoutlibs.R;
+import com.vhcc.arclayoutlibs.Utils;
 
 /**
  * Created by xmuSistone on 2016/5/23.
  */
 public class DraggableCardItem extends FrameLayout {
+
+    private static final Utils mLog = new Utils(true);
+    private final String TAG = getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+
 
     public static final int STATUS_LEFT_TOP = 0;
     public static final int STATUS_RIGHT_TOP = 1;
@@ -33,21 +39,29 @@ public class DraggableCardItem extends FrameLayout {
     public static final int SCALE_LEVEL_2 = 2; // 中间状态，缩放比例scaleRate
     public static final int SCALE_LEVEL_3 = 3; // 最小状态，缩放比例是smallerRate
 
+    // Scale rate
+    private float scaleRate = 0.5f;
+    private float smallerRate = scaleRate * 0.8f;
+
+    // View
     private ImageView imageView;
     private View maskView;
+    private ArcLayout parentView;
+
     private int status;
-    private float scaleRate = 0.5f;
-    private float smallerRate = scaleRate * 0.9f;
+
     private Spring springX, springY;
     private ObjectAnimator scaleAnimator;
     private boolean hasSetCurrentSpringValue = false;
-    private DraggableCardView parentView;
+
     private SpringConfig springConfigCommon = SpringConfig.fromOrigamiTensionAndFriction(140, 7);
     private int moveDstX = Integer.MIN_VALUE, moveDstY = Integer.MIN_VALUE;
-    private View.OnClickListener dialogListener;
+    private OnClickListener dialogListener;
 
     private String imagePath;
     private View addView;
+
+
 
     public DraggableCardItem(Context context) {
         this(context, null);
@@ -60,11 +74,11 @@ public class DraggableCardItem extends FrameLayout {
     public DraggableCardItem(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         inflate(context, R.layout.drag_item, this);
-        imageView = (ImageView) findViewById(R.id.drag_item_imageview);
+        imageView = findViewById(R.id.drag_item_imageview);
         maskView = findViewById(R.id.drag_item_mask_view);
         addView = findViewById(R.id.add_view);
 
-        dialogListener = new View.OnClickListener() {
+        dialogListener = new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.pick_image) {
@@ -75,7 +89,7 @@ public class DraggableCardItem extends FrameLayout {
                     imagePath = null;
                     imageView.setImageBitmap(null);
                     addView.setVisibility(View.VISIBLE);
-                    parentView.onDeleteImage(DraggableCardItem.this);
+//                    parentView.onDeleteImage(DraggableCardItemNew.this);
                 }
             }
         };
@@ -90,7 +104,7 @@ public class DraggableCardItem extends FrameLayout {
             }
         });
 
-        maskView.setOnClickListener(new View.OnClickListener() {
+        maskView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!isDraggable()) {
@@ -143,18 +157,27 @@ public class DraggableCardItem extends FrameLayout {
      * 调整ImageView的宽度和高度各为FrameLayout的一半
      */
     private void adjustImageView() {
-        if (status != STATUS_LEFT_TOP) {
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " * adjustImageView, status= %d", status);
+            mLog.d(TAG, " * view= " + this.getClass().getSimpleName()
+                    + "@" + hashCode());
+        }
+
+//        if (status != STATUS_LEFT_TOP) {
             imageView.setScaleX(scaleRate);
             imageView.setScaleY(scaleRate);
 
             maskView.setScaleX(scaleRate);
             maskView.setScaleY(scaleRate);
-        }
+//        }
 
         setCurrentSpringPos(getLeft(), getTop());
     }
 
     public void setScaleRate(float scaleRate) {
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " * setScaleRate");
+        }
         this.scaleRate = scaleRate;
         this.smallerRate = scaleRate * 0.9f;
     }
@@ -189,12 +212,23 @@ public class DraggableCardItem extends FrameLayout {
      * 设置缩放大小
      */
     public void scaleSize(int scaleLevel) {
-        float rate = scaleRate;
-        if (scaleLevel == SCALE_LEVEL_1) {
-            rate = 1.0f;
-        } else if (scaleLevel == SCALE_LEVEL_3) {
-            rate = smallerRate;
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " -- scaleSize, scaleLevel= %d", scaleLevel);
         }
+        float rate = scaleRate;
+
+        switch(scaleLevel) {
+            case SCALE_LEVEL_1:
+                rate = 1.0f;
+                break;
+            case SCALE_LEVEL_2:
+                rate = scaleRate;
+                break;
+            case SCALE_LEVEL_3:
+                rate = smallerRate;
+                break;
+        }
+
 
         if (scaleAnimator != null && scaleAnimator.isRunning()) {
             scaleAnimator.cancel();
@@ -220,11 +254,14 @@ public class DraggableCardItem extends FrameLayout {
         if (moveDstX == Integer.MIN_VALUE || moveDstX == Integer.MIN_VALUE) {
             return;
         }
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " -- startAnchorAnimation");
+        }
 
         springX.setOvershootClampingEnabled(true);
         springY.setOvershootClampingEnabled(true);
         animTo(moveDstX, moveDstY);
-        scaleSize(DraggableCardItem.SCALE_LEVEL_3);
+        scaleSize(DraggableCardItem.SCALE_LEVEL_1);
     }
 
     public void setScreenX(int screenX) {
@@ -261,16 +298,25 @@ public class DraggableCardItem extends FrameLayout {
         return status;
     }
 
-    public void setParentView(DraggableCardView parentView) {
+    public void setParentView(ArcLayout parentView) {
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " * setParentView, view= " + this.getClass().getSimpleName()
+                    + "@" + hashCode());
+        }
+
         this.parentView = parentView;
     }
 
     public void onDragRelease() {
-        if (status == DraggableCardItem.STATUS_LEFT_TOP) {
-            scaleSize(DraggableCardItem.SCALE_LEVEL_1);
-        } else {
-            scaleSize(DraggableCardItem.SCALE_LEVEL_2);
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " -- onDragRelease");
         }
+        scaleSize(DraggableCardItem.SCALE_LEVEL_2);
+//        if (status == DraggableCardItemNew.STATUS_LEFT_TOP) {
+//            scaleSize(DraggableCardItemNew.SCALE_LEVEL_1);
+//        } else {
+//            scaleSize(DraggableCardItemNew.SCALE_LEVEL_2);
+//        }
 
         springX.setOvershootClampingEnabled(false);
         springY.setOvershootClampingEnabled(false);
@@ -282,6 +328,10 @@ public class DraggableCardItem extends FrameLayout {
         this.moveDstX = point.x;
         this.moveDstY = point.y;
         animTo(moveDstX, moveDstY);
+        if (Utils.ENABLE_GLOBAL_LOG) {
+            mLog.d(TAG, " -- onDragRelease, point.x= %d, point.y= %d",
+                    point.x, point.y);
+        }
     }
 
     public void fillImageView(String imagePath) {
@@ -312,7 +362,10 @@ public class DraggableCardItem extends FrameLayout {
     }
 
     public boolean isDraggable() {
-        return imagePath != null;
+        return true;
+//        return imagePath != null;
     }
+
+
 }
 

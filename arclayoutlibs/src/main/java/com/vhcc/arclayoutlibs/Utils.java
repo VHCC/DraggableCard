@@ -21,7 +21,7 @@ import android.view.View;
 public class Utils {
 
     // General Field
-    private static final String LOG_PREFIX = "ArcLibs, ";
+    private static final String LOG_PREFIX = "DragLibs, ";
 
     public static final boolean ENABLE_GLOBAL_LOG = true; //Set to true only when developing
 
