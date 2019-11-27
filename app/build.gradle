@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'maven'
 
 android {
     compileSdkVersion 29
@@ -16,6 +17,34 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                snapshotRepository(url: 'https://nexus.ichenprocin.dsmynas.com/repository/vhcc/') {
+                    authentication(userName: 'piggydeveloper', password: '0123456789')
+                }
+                repository(url: 'https://nexus.ichenprocin.dsmynas.com/repository/vhcc/') {
+                    authentication(userName: 'piggydeveloper', password: '0123456789')
+                }
+                pom.project {
+                    version '0.0.1'
+                    artifactId 'draggablecard'
+                    groupId 'com.vhcc.libs'
+                    packaging 'aar'
+                    description 'dependences lib'
+                }
+            }
+        }
+    }
+
+    artifacts {
+        archives file('../arclayoutlibs/build/outputs/aar/arclayoutlibs-release.aar')
+    }
+
+    packagingOptions {
+        exclude 'META-INF/proguard/androidx-annotations.pro'
+    }
 }
 
 dependencies {
@@ -23,6 +52,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation project(':arclayoutlibs')
+//    implementation 'com.vhcc.libs:example:0.0.2'
 
     testImplementation 'junit:junit:4.12'
 
